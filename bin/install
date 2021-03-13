@@ -1,12 +1,71 @@
 #!/usr/bin/env bash
 
+export KERL_BUILD_DOCS="${KERL_BUILD_DOCS:-yes}"
+
 set -e
 
-# shellcheck source=../bin/utils.sh
-source "$(dirname "$0")/utils.sh"
+
+# shellcheck source=../lib/utils.sh
+source "$(dirname $0)/../lib/utils.sh"
 
 install_erlang() {
   ensure_kerl_setup
+
+
+  if [ -z "$KERL_CONFIGURE_OPTIONS" ]; then 
+    echo "KERL_CONFIGURE_OPTIONS is not set, will use default settings."
+
+    export KERL_CONFIGURE_OPTIONS="--disable-debug --disable-silent-rules --enable-dynamic-ssl-lib"
+    export KERL_CONFIGURE_OPTIONS="$KERL_CONFIGURE_OPTIONS --enable-hipe --enable-sctp --enable-shared-zlib --enable-smp-support"
+    export KERL_CONFIGURE_OPTIONS="$KERL_CONFIGURE_OPTIONS --enable-threads --enable-wx --without-javac"
+
+    if [ "$(uname -s)" = "Darwin" ]; then
+      echo "Using Homebrew for dependencies."
+      if [ -x "$(command -v ruby-install)" ]; then
+        if [ ! -d "$(brew --prefix autoconf)" ]; then
+          echo "Missing autoconf from Homebrew"
+          echo "brew install autoconf"
+          exit 1
+        fi
+        if [ ! -d "$(brew --prefix libtool)" ]; then
+          echo "Missing libtool from Homebrew"
+          echo "brew install libtool"
+          exit 1
+        fi
+        if [ ! -d "$(brew --prefix openssl)" ]; then
+          echo "Missing openssl from Homebrew"
+          echo "brew install openssl"
+          exit 1
+        fi
+        if [ ! -d "$(brew --prefix wxmac)" ]; then
+          echo "Missing wxmac from Homebrew"
+          echo "brew install wxmac"
+          exit 1
+        fi
+        export KERL_CONFIGURE_OPTIONS="$KERL_CONFIGURE_OPTIONS --with-ssl=$(brew --prefix openssl) --enable-darwin-64bit --enable-kernel-poll --with-dynamic-trace=dtrace"  
+      else
+        echo "Homebrew is not installed or in PATH"
+        echo "To install without Homebrew, set your own KERL_CONFIGURE_OPTIONS"
+      fi
+    fi
+  fi
+  
+  
+
+
+
+
+  echo "Installing Erlang $ASDF_INSTALL_VERSION"
+  if [ "$KERL_BUILD_DOCS" != "yes" ]; then
+    unset KERL_BUILD_DOCS
+    echo "without documentation"
+  else
+    echo "With documentation"
+  fi
+  echo "With KERL_CONFIGURE_OPTIONS set to: "
+  echo "$KERL_CONFIGURE_OPTIONS"
+  echo "---"
+
   local asdf_activation_version
   local build_name
 
@@ -16,6 +75,7 @@ install_erlang() {
 
   $(kerl_path) delete installation "$build_name" || true
   $(kerl_path) delete build "$build_name" || true
+
 
   if [ "$ASDF_INSTALL_TYPE" = "ref" ]; then
     asdf_activation_version="$ASDF_INSTALL_TYPE:$ASDF_INSTALL_VERSION"
