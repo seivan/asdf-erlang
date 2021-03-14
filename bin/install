@@ -21,7 +21,7 @@ install_erlang() {
 
     if [ "$(uname -s)" = "Darwin" ]; then
       echo "Using Homebrew for dependencies."
-      if [ -x "$(command -v ruby-install)" ]; then
+      if [ -x "$(command -v brew)" ]; then
         if [ ! -d "$(brew --prefix autoconf)" ]; then
           echo "Missing autoconf from Homebrew"
           echo "brew install autoconf"

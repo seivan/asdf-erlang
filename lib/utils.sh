@@ -25,7 +25,7 @@ ensure_kerl_installed() {
       fi
     fi
   else
-    # ruby-install does not exist, so install using default value in RUBY_INSTALL_VERSION
+    # kerl does not exist, so install using default value in KERL_VERSION
     download_kerl
   fi
 }
@@ -65,7 +65,7 @@ kerl_source_dir() {
 
 
 kerl_path() {
-  #Check if ruby-install exists without an expected version
+  #Check if kerl exists without an expected version
   if [ -x "$(command -v kerl)" ] && [ -z "${ASDF_KERL_VERSION:-}" ]; then
     echo "$(command -v kerl)"
   else
