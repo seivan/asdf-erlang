@@ -60,7 +60,7 @@ install_erlang() {
     unset KERL_BUILD_DOCS
     echo "without documentation"
   else
-    echo "With documentation"
+    echo "with documentation"
   fi
   echo "With KERL_CONFIGURE_OPTIONS set to: "
   echo "$KERL_CONFIGURE_OPTIONS"
